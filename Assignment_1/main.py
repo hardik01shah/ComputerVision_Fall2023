@@ -8,10 +8,10 @@ from functions.match_descriptors import match_descriptors
 from functions.vis_utils import plot_image_with_keypoints, plot_image_pair_with_matches
 
 # constants
-HARRIS_SIGMA = 1.0
-HARRIS_K = 0.05
-HARRIS_THRESH = 1e-5
-MATCHING_RATIO_TEST_THRESHOLD = 0.5
+HARRIS_SIGMA = 1.0  # default = 1.0
+HARRIS_K = 0.05  # default = 0.05
+HARRIS_THRESH = 1e-5  # default = 1e-5
+MATCHING_RATIO_TEST_THRESHOLD = 0.5  # default = 0.5
 
 def main_detection():
     IMG_NAME1 = "images/blocks.jpg"
