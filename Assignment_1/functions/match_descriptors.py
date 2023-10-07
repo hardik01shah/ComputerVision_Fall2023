@@ -11,22 +11,21 @@ def ssd(desc1, desc2):
     '''
     assert desc1.shape[1] == desc2.shape[1]
     # TODO: implement this function please
-    # p_1 = np.arange(desc1.shape[0])
-    # p_2 = np.arange(desc2.shape[0])
-    # print(f"[LOG] Shape of p_1: {p_1.shape}")
-    # print(f"[LOG] Shape of p_2: {p_2.shape}")
-    # idx, idy = np.meshgrid(p_1, p_2)
 
-    # print(f"[LOG] Shape of idx: {idx.shape}")
-    # print(f"[LOG] Shape of idy: {idy.shape}")
-    # distances = np.sum(
-    #     np.square(desc1[idx] - desc2[idy]), axis=2
-    # )
     q1, q2 = desc1.shape[0], desc2.shape[0]
+
+    # vectorized implementation
+    idx, idy = np.meshgrid(np.arange(q2), np.arange(q1))
+
+    distances = np.sum(np.square(desc1[idy] - desc2[idx]), axis=2)
+
+    """
+    # using for loop
     distances = np.zeros((q1, q2))
     for i in np.arange(q1):
         for j in np.arange(q2):
             distances[i,j] = np.sum(np.square(desc1[i,:]-desc2[j,:]))
+    """
     return distances
 
 
