@@ -36,21 +36,27 @@ def extract_harris(img, sigma = 1.0, k = 0.05, thresh = 1e-5):
     # 2. Blur the computed gradients
     # TODO: compute the blurred image gradients
     # You may refer to cv2.GaussianBlur for the gaussian filtering (border_type=cv2.BORDER_REPLICATE)
-    Ix_b = cv2.GaussianBlur(Ix, ksize=(0,0), sigmaX=sigma)
-    Iy_b = cv2.GaussianBlur(Iy, ksize=(0,0), sigmaX=sigma)
-
+    # Gaussian filter can be added here to smoothen out image derivatives.
+    # Ix_b = cv2.GaussianBlur(Ix, ksize=(0,0), sigmaX=sigma, borderType=cv2.BORDER_REPLICATE)
+    # Iy_b = cv2.GaussianBlur(Iy, ksize=(0,0), sigmaX=sigma, borderType=cv2.BORDER_REPLICATE)
+    Ix_b = Ix
+    Iy_b = Iy
 
     # 3. Compute elements of the local auto-correlation matrix "M"
     # TODO: compute the auto-correlation matrix here
-    Ix2 = np.square(Ix_b, Ix_b)
-    Iy2 = np.square(Iy_b, Iy_b)
+    Ix2 = np.multiply(Ix_b, Ix_b)
+    Iy2 = np.multiply(Iy_b, Iy_b)
     Ix_Iy = np.multiply(Ix_b, Iy_b)
+
+    # Add gaussian blur to the computed matrix elements of the local auto-correlation matrix "M"
+    Ix2 = cv2.GaussianBlur(Ix2, ksize=(0,0), sigmaX=sigma, borderType=cv2.BORDER_REPLICATE)
+    Iy2 = cv2.GaussianBlur(Iy2, ksize=(0,0), sigmaX=sigma, borderType=cv2.BORDER_REPLICATE)
+    Ix_Iy = cv2.GaussianBlur(Ix_Iy, ksize=(0,0), sigmaX=sigma, borderType=cv2.BORDER_REPLICATE)
 
 
     # 4. Compute Harris response function C
     # TODO: compute the Harris response function C here
     C = (np.multiply(Ix2, Iy2) - np.square(Ix_Iy)) - k*np.square(Ix2 + Iy2)
-
 
     # 5. Detection with threshold and non-maximum suppression
     # TODO: detection and find the corners here
