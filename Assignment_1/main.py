@@ -26,6 +26,27 @@ def main_detection():
     corners2, C2 = extract_harris(img2, HARRIS_SIGMA, HARRIS_K, HARRIS_THRESH)
     plot_image_with_keypoints(os.path.basename(IMG_NAME2[:-4]) + "_harris.png", img2, corners2)
 
+def main_detection_sweep():
+    IMG_NAME1 = "images/blocks.jpg"
+    IMG_NAME2 = "images/house.jpg"
+
+    HARRIS_K_SWEEP = [0.04, 0.05, 0.06]
+    HARRIS_SIGMA_SWEEP = [0.5, 1.0, 1.5]
+    HARRIS_THRESH_SWEEP = [1e-4, 1e-5, 1e-6]
+
+    # Harris corner detection
+    for k in HARRIS_K_SWEEP:
+        for s in HARRIS_SIGMA_SWEEP:
+            for t in HARRIS_THRESH_SWEEP:
+
+                img1 = cv2.imread(IMG_NAME1, cv2.IMREAD_GRAYSCALE)
+                corners1, C1 = extract_harris(img1, s, k, t)
+                plot_image_with_keypoints("sweep_results/" + os.path.basename(IMG_NAME1[:-4])+ f"_k_{k}_s_{s}_t_{t}.png", img1, corners1)
+
+                img2 = cv2.imread(IMG_NAME2, cv2.IMREAD_GRAYSCALE)
+                corners2, C2 = extract_harris(img2, s, k, t)
+                plot_image_with_keypoints("sweep_results/" + os.path.basename(IMG_NAME2[:-4]) + f"_k_{k}_s_{s}_t_{t}.png", img2, corners2)
+
 def main_matching():
     IMG_NAME1 = "images/I1.jpg"
     IMG_NAME2 = "images/I2.jpg"
@@ -54,6 +75,7 @@ def main_matching():
 
 def main():
     main_detection()
+    # main_detection_sweep()
     pdb.set_trace() # Enter c to continue to matching, q to exit.
     main_matching()
 
