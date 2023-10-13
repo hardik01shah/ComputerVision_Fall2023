@@ -21,10 +21,11 @@ def ssd(desc1, desc2):
 
     """
     # using for loop
-    distances = np.zeros((q1, q2))
+    distances_loop = np.zeros((q1, q2))
     for i in np.arange(q1):
         for j in np.arange(q2):
-            distances[i,j] = np.sum(np.square(desc1[i,:]-desc2[j,:]))
+            distances_loop[i,j] = np.sum(np.square(desc1[i,:]-desc2[j,:]))
+    assert np.sum(distances_loop != distances) == 0
     """
     return distances
 
