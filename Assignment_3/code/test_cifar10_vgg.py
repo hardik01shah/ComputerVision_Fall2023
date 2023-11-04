@@ -12,7 +12,7 @@ parser.add_argument("--batch_size", default=128, type=int)
 
 parser.add_argument("--fc_layer", default=512, type=int)
 
-parser.add_argument("--model_path", default='runs/48557/last_model.pkl', type=str, help='path to the trained model, please change the default value to the path of your trained model')
+parser.add_argument("--model_path", default='runs/369/last_model.pkl', type=str, help='path to the trained model, please change the default value to the path of your trained model')
 parser.add_argument("--root", default='data/data_cnn/cifar-10-batches-py', type=str, help='path to dataset folder')
 args = parser.parse_args()
 ###################################

@@ -24,14 +24,35 @@ class Vgg(nn.Module):
         # # classifier (Linear, ReLU, Dropout, Linear) --> [bs, 10] (final output)
 
         # hint: stack layers in each block with nn.Sequential, e.x.:
-        # # self.conv_block1 = nn.Sequential(
-        # #     layer1,
-        # #     layer2,
-        # #     layer3,
-        # #     ...)
+        self.conv_block1 = nn.Sequential(
+            nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2))
+        self.conv_block2 = nn.Sequential(
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2))
+        self.conv_block3 = nn.Sequential(
+            nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2))
+        self.conv_block4 = nn.Sequential(
+            nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2))
+        self.conv_block5 = nn.Sequential(
+            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2))
         # for all conv layers, set: kernel=3, padding=1
 
-        ...
+        self.flatten = nn.Flatten()
+
+        self.classifier = nn.Sequential(
+            nn.Linear(in_features=512, out_features=self.fc_layer),
+            nn.ReLU(),
+            nn.Dropout(p=0.5),
+            nn.Linear(in_features=self.fc_layer, out_features=self.classes))
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -47,7 +68,16 @@ class Vgg(nn.Module):
         """
         score = None
         # todo
-        ...
+        x = self.conv_block1(x)
+        x = self.conv_block2(x)
+        x = self.conv_block3(x)
+        x = self.conv_block4(x)
+        x = self.conv_block5(x)
+        
+        x = self.flatten(x)
+        
+        # Classifier block
+        score = self.classifier(x)
 
         return score
 
