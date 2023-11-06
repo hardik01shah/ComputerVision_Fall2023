@@ -4,6 +4,7 @@ import glob
 import os
 from sklearn.cluster import KMeans
 from tqdm import tqdm
+from matplotlib import pyplot as plt
 
 
 def findnn(D1, D2):
@@ -224,6 +225,8 @@ def hyperparam_search():
 
     K = [*range(1,21)] 
     numiter = 4000  # todo
+    pos_acc = []
+    neg_acc = []
 
     for k in K:
         print(f"\n===========\nFor Centers = {k}:\n")
@@ -238,6 +241,7 @@ def hyperparam_search():
             result_pos = result_pos + cur_label
         acc_pos = result_pos / vBoWPos_test.shape[0]
         print('test pos sample accuracy:', acc_pos)
+        pos_acc.append(acc_pos)
         vBoWNeg_test = create_bow_histograms(nameDirNeg_test, vCenters)  # [n_imgs, k]
         result_neg = 0
         for i in range(vBoWNeg_test.shape[0]):
@@ -245,18 +249,32 @@ def hyperparam_search():
             result_neg = result_neg + cur_label
         acc_neg = 1 - result_neg / vBoWNeg_test.shape[0]
         print('test neg sample accuracy:', acc_neg)
+        neg_acc.append(acc_neg)
+    
+    plt.plot(K, pos_acc, label='test pos sample accuracy')
+    plt.scatter(K, pos_acc, marker='+')
+    plt.plot(K, neg_acc, label='test neg sample accuracy')
+    plt.scatter(K, neg_acc, marker='*')
+    plt.legend()
+    plt.xlabel('Number of cluster centers')
+    plt.ylabel('Test Accuracy')
+    plt.title('Test Accuracy vs K')
+    plt.savefig('acc_vs_k.png')
+    plt.show()
+    plt.close()
+
 
 
 if __name__ == '__main__':
-    hyperparam_search()
-    exit()
+    # hyperparam_search()
+    # exit()
     nameDirPos_train = 'data/data_bow/cars-training-pos'
     nameDirNeg_train = 'data/data_bow/cars-training-neg'
     nameDirPos_test = 'data/data_bow/cars-testing-pos'
     nameDirNeg_test = 'data/data_bow/cars-testing-neg'
 
 
-    k = 6  # todo
+    k = 5  # todo
     numiter = 4000  # todo
 
     print('creating codebook ...')
