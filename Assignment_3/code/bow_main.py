@@ -46,10 +46,11 @@ def grid_points(img, nPointsX, nPointsY, border):
 
     # todo
     h, w = img.shape
-    pts_x = np.linspace(border, h-border-1, nPointsX).astype(int)
-    pts_y = np.linspace(border, w-border-1, nPointsY).astype(int)
+    pts_y = np.linspace(border, h-border, nPointsY).astype(int)
+    pts_x = np.linspace(border, w-border, nPointsX).astype(int)
 
-    vPoints = np.column_stack((pts_x.reshape(-1,1), pts_y.reshape(-1,1)))
+    all_pts_x, all_pts_y = np.meshgrid(pts_x, pts_y, indexing='ij')
+    vPoints = np.column_stack((all_pts_x.reshape(-1,1), all_pts_y.reshape(-1,1)))
 
     return vPoints
 
@@ -80,15 +81,13 @@ def descriptors_hog(img, vPoints, cellWidth, cellHeight):
                 # todo
                 # compute the angles
                 # compute the histogram
+                assert start_x>=0 and start_y>=0
+                assert end_x<=img.shape[1] and end_y<=img.shape[0]
+
                 angles = np.arctan2(grad_y[start_y:end_y, start_x:end_x], grad_x[start_y:end_y, start_x:end_x])
-                angles = angles % (2*np.pi)
+                hist, _ = np.histogram(angles, bins=8, range=(-np.pi, np.pi))
+                desc.append(hist)
 
-                bin_width = (2*np.pi)/nBins
-                hist_indx = (angles/(bin_width)).astype(int)
-                
-                assert np.sum(np.logical_and(hist_indx<0, hist_indx>=nBins)) == 0
-
-                desc.append(np.histogram(hist_indx, bins=8, range=(0,8))[0])
         desc = np.array(desc).reshape(-1)
         descriptors.append(desc)
 
@@ -137,7 +136,7 @@ def create_codebook(nameDirPos, nameDirNeg, k, numiter):
 
     # Cluster the features using K-Means
     print('clustering ...')
-    kmeans_res = KMeans(n_clusters=k, max_iter=numiter, n_init='auto', random_state=1).fit(vFeatures)
+    kmeans_res = KMeans(n_clusters=k, max_iter=numiter, random_state=42).fit(vFeatures)
     vCenters = kmeans_res.cluster_centers_  # [k, 128]
     return vCenters
 
@@ -206,8 +205,8 @@ def bow_recognition_nearest(histogram,vBoWPos,vBoWNeg):
 
     # Find the nearest neighbor in the positive and negative sets and decide based on this neighbor
     # todo
-    DistPos = np.min(np.linalg.norm(vBoWPos-histogram))
-    DistNeg = np.min(np.linalg.norm(vBoWNeg-histogram))
+    DistPos = np.min(np.linalg.norm(vBoWPos-histogram, axis=1))
+    DistNeg = np.min(np.linalg.norm(vBoWNeg-histogram, axis=1))
 
     if (DistPos < DistNeg):
         sLabel = 1
@@ -223,7 +222,7 @@ def hyperparam_search():
     nameDirNeg_test = 'data/data_bow/cars-testing-neg'
 
 
-    K = [*range(1,21)] 
+    K = [*range(2,21)] 
     numiter = 4000  # todo
     pos_acc = []
     neg_acc = []
@@ -274,8 +273,8 @@ if __name__ == '__main__':
     nameDirNeg_test = 'data/data_bow/cars-testing-neg'
 
 
-    k = 5  # todo
-    numiter = 4000  # todo
+    k = 11  # todo
+    numiter = 400  # todo
 
     print('creating codebook ...')
     vCenters = create_codebook(nameDirPos_train, nameDirNeg_train, k, numiter)
