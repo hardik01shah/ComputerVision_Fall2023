@@ -6,4 +6,9 @@ Assignment_3/code/data/*
 Assignment_3/code/__pycache__/*
 Assignment_3/code/loader/__pycache__/*
 Assignment_3/code/models/__pycache__/*
+Assignment_4/seg-net/data/*
+Assignment_4/seg-net/lib/models/__pycache__/*
+Assignment_4/seg-net/lib/core/__pycache__/*
+Assignment_4/seg-net/lib/utils/__pycache__/*
+Assignment_4/seg-net/lib/dataset/__pycache__/*
 Submissions/*
