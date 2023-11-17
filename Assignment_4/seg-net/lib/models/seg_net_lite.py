@@ -40,7 +40,19 @@ class SegNetLite(nn.Module):
         layers_conv_down = []
         layers_bn_down = []
         layers_pooling = []
-        raise NotImplementedError('Downsampling layers are not implemented!')
+
+        for i in range(self.num_down_layers):
+            in_channels = input_size if i==0 else down_filter_sizes[i-1]
+            layers_conv_down.append(nn.Conv2d(
+                in_channels=in_channels,
+                out_channels=down_filter_sizes[i],
+                kernel_size=kernel_sizes[i],
+                padding=conv_paddings[i]))
+            layers_bn_down.append(nn.BatchNorm2d(num_features=down_filter_sizes[i]))
+            layers_pooling.append(nn.MaxPool2d(
+                kernel_size=pooling_kernel_sizes[i],
+                stride=pooling_strides[i],
+                return_indices=True))
 
         # Convert Python list to nn.ModuleList, so that PyTorch's autograd
         # package can track gradients and update parameters of these layers
@@ -56,7 +68,19 @@ class SegNetLite(nn.Module):
         layers_conv_up = []
         layers_bn_up = []
         layers_unpooling = []
-        raise NotImplementedError('Upsampling layers are not implemented!')
+
+        for i in range(self.num_up_layers):
+            layers_unpooling.append(nn.MaxUnpool2d(
+                kernel_size=pooling_kernel_sizes[self.num_up_layers-1-i],
+                stride=pooling_strides[self.num_up_layers-1-i]))
+            in_channels = down_filter_sizes[-1] if i==0 else up_filter_sizes[i-1]
+            layers_conv_up.append(nn.Conv2d(
+                in_channels=in_channels,
+                out_channels=up_filter_sizes[i],
+                kernel_size=kernel_sizes[self.num_up_layers-1-i],
+                padding=conv_paddings[self.num_up_layers-1-i]))
+            layers_bn_up.append(nn.BatchNorm2d(num_features=up_filter_sizes[i]))
+
 
         # Convert Python list to nn.ModuleList, so that PyTorch's autograd
         # can track gradients and update parameters of these layers
@@ -67,11 +91,31 @@ class SegNetLite(nn.Module):
         self.relu = nn.ReLU(True)
 
         # Implement a final 1x1 convolution to to get the logits of 11 classes (background + 10 digits)
-        raise NotImplementedError('Final convolution layer is not implemented!')
+        self.final_conv = nn.Conv2d(
+            in_channels=up_filter_sizes[-1],
+            out_channels=11,
+            kernel_size=1,
+            stride=1)
 
     def forward(self, x):
-        raise NotImplementedError('Forward function not implemented!')
+        down_indices = []
+        down_shapes = []
+        for i in range(self.num_down_layers):
+            x = self.layers_conv_down[i](x)
+            x = self.layers_bn_down[i](x)
+            x = self.relu(x)
+            down_shapes.append(x.size())
+            x, indx = self.layers_pooling[i](x)
+            down_indices.append(indx)
 
+        for i in range(self.num_up_layers):
+            x = self.layers_unpooling[i](x, down_indices[self.num_up_layers-1-i], output_size=down_shapes[self.num_up_layers-1-i])
+            x = self.layers_conv_up[i](x)
+            x = self.layers_bn_up[i](x)
+            x = self.relu(x)
+        x=self.final_conv(x)
+
+        return x
 
 def get_seg_net(**kwargs):
 
