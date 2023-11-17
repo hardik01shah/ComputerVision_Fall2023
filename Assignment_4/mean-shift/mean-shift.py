@@ -6,16 +6,21 @@ from skimage import io, color
 from skimage.transform import rescale
 
 def distance(x, X):
-    raise NotImplementedError('distance function not implemented!')
+    return np.linalg.norm(x-X, axis=1, keepdims=True)
 
 def gaussian(dist, bandwidth):
-    raise NotImplementedError('gaussian function not implemented!')
+    return np.exp(-(dist**2)/(2*bandwidth**2))
 
 def update_point(weight, X):
-    raise NotImplementedError('update_point function not implemented!')
+    return np.sum(X*weight, axis=0)/np.sum(weight, keepdims=True)
 
 def meanshift_step(X, bandwidth=2.5):
-    raise NotImplementedError('meanshift_step function not implemented!')
+    for i in range(len(X)):
+        cur_pt = X[i]
+        distances = distance(cur_pt, X)
+        weights = gaussian(distances, bandwidth=2.5)
+        X[i] = update_point(weights, X)
+    return X
 
 def meanshift(X):
     for _ in range(20):
