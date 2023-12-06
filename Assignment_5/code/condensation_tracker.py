@@ -223,9 +223,9 @@ if __name__ == "__main__":
         "hist_bin": 16,
         "alpha": 0,
         "sigma_observe": 0.1,
-        "model": 0,
-        "num_particles": 30,
-        "sigma_position": 15,
+        "model": 1,
+        "num_particles": 300,
+        "sigma_position": 7,
         "sigma_velocity": 1,
         "initial_velocity": (1, 10)
     }

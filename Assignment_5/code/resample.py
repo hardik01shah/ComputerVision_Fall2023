@@ -3,12 +3,10 @@ import numpy as np
 def resample(particles, particles_w):
     ind = np.random.choice(len(particles), len(particles), replace=True, p=particles_w[:,0])
     resampled_particles = particles[ind,:]
+    resampled_particles_w = particles_w[ind,:]
 
-    # chosen indices in old particle array
-    indx_old = np.unique(ind)
-
-    resampled_particles_w = np.zeros([particles.shape[0], 1]) / particles.shape[0]
-    resampled_particles_w[indx_old,:] = particles_w[indx_old,:]
+    # normalize weights
+    resampled_particles_w = resampled_particles_w/np.sum(resampled_particles_w)
 
     assert resampled_particles.shape == particles.shape
     assert resampled_particles_w.shape == particles_w.shape
