@@ -7,6 +7,9 @@ def Plot3DPoints(points, ax=None):
     ax = fig.add_subplot(111, projection='3d')
   ax.plot(xs=points[:,0], ys=points[:,1], zs=points[:,2], color='k', marker='.', linestyle='None')
   ax.set_title('3D Scene')
+  # ax.set_xlim3d(-100,100)
+  # ax.set_ylim3d(-100,100)
+  # ax.set_zlim3d(-100,100)
   
   plt.show(block=False)
 

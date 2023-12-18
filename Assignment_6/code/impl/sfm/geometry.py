@@ -13,15 +13,15 @@ from impl.sfm.corrs import GetPairMatches
 def EstimateEssentialMatrix(K, im1, im2, matches):
   # TODO
   # Normalize coordinates (to points on the normalized image plane)
-  normalized_kps1 = 
-  normalized_kps2 = 
-
+  normalized_kps1 = MakeHomogeneous(im1.kps, ax=1) @ np.linalg.inv(K).transpose()
+  normalized_kps2 = MakeHomogeneous(im2.kps, ax=1) @ np.linalg.inv(K).transpose()
   
   # Assemble constraint matrix as equation 2.1
   constraint_matrix = np.zeros((matches.shape[0], 9))
   for i in range(matches.shape[0]):
     # TODO
     # Add the constraints
+    constraint_matrix[i,:] = np.kron(normalized_kps1[matches[i,0],:], normalized_kps2[matches[i,1],:])
   
   # Solve for the nullspace of the constraint matrix
   _, _, vh = np.linalg.svd(constraint_matrix)
@@ -29,13 +29,15 @@ def EstimateEssentialMatrix(K, im1, im2, matches):
 
   # TODO
   # Reshape the vectorized matrix to it's proper shape again
-  E_hat = 
+  E_hat = vectorized_E_hat.reshape((3,3)).T
 
   # TODO
   # We need to fulfill the internal constraints of E
   # The first two singular values need to be equal, the third one zero.
   # Since E is up to scale, we can choose the two equal singluar values arbitrarily
-  E = 
+  U, _, Vh = np.linalg.svd(E_hat)
+  S = np.diag((1, 1, 0))
+  E = U @ S @ Vh
 
   # This is just a quick test that should tell you if your estimated matrix is not correct
   # It might fail if you estimated E in the other direction (i.e. kp2' * E * kp1)
@@ -44,7 +46,7 @@ def EstimateEssentialMatrix(K, im1, im2, matches):
     kp1 = normalized_kps1[matches[i,0],:]
     kp2 = normalized_kps2[matches[i,1],:]
 
-    assert(abs(kp1.transpose() @ E @ kp2) < 0.01)
+    assert(abs(kp2.transpose() @ E @ kp1) < 0.01)
 
   return E
 
@@ -132,14 +134,22 @@ def TriangulatePoints(K, im1, im2, matches):
   # Make sure to also remove the corresponding rows in `im1_corrs` and `im2_corrs`
 
   # Filter points behind the first camera
-  im1_corrs = 
-  im2_corrs =
-  points3D = 
+  M1 = np.hstack((R1, t1.reshape((3,1))))
+  points_cam1 = MakeHomogeneous(points3D, ax=1) @ M1.transpose()
+  mask_cam1 = points_cam1[:,2] > 0
+
+  im1_corrs = im1_corrs[mask_cam1]
+  im2_corrs = im2_corrs[mask_cam1]
+  points3D = points3D[mask_cam1]
 
   # Filter points behind the second camera
-  im1_corrs = 
-  im2_corrs =
-  points3D = 
+  M2 = np.hstack((R2, t2.reshape((3,1))))
+  points_cam2 = MakeHomogeneous(points3D, ax=1) @ M2.transpose()
+  mask_cam2 = points_cam2[:,2] > 0
+
+  im1_corrs = im1_corrs[mask_cam2]
+  im2_corrs = im2_corrs[mask_cam2]
+  points3D = points3D[mask_cam2]
 
   return points3D, im1_corrs, im2_corrs
 
@@ -149,7 +159,7 @@ def EstimateImagePose(points2D, points3D, K):
   # We use points in the normalized image plane.
   # This removes the 'K' factor from the projection matrix.
   # We don't normalize the 3D points here to keep the code simpler.
-  normalized_points2D = 
+  normalized_points2D = MakeHomogeneous(points2D, ax=1) @ np.linalg.inv(K).transpose()
 
   constraint_matrix = BuildProjectionConstraintMatrix(normalized_points2D, points3D)
 
@@ -187,6 +197,26 @@ def TriangulateImage(K, image_name, images, registered_images, matches):
   # You can save the correspondences for each image in a dict and refer to the `local` new point indices here.
   # Afterwards you just add the index offset before adding the correspondences to the images.
   corrs = {}
-  
+  cur_image_corrs = np.zeros((0,))
+  curr_offset = 0
+  for other_image_name in registered_images:
+    other_image = images[other_image_name]
+    pair_matches = GetPairMatches(image_name, other_image_name, matches)
+
+    # Triangulate points
+    new_points3D, im1_corrs, im2_corrs = TriangulatePoints(K, image, other_image, pair_matches)
+
+    assert len(im1_corrs) == len(im2_corrs)
+    assert len(im1_corrs) == len(new_points3D)
+
+    # Add the new correspondences to the dict
+    corrs[other_image_name] = (curr_offset, im2_corrs)
+    curr_offset += len(im2_corrs)
+    cur_image_corrs = np.append(cur_image_corrs, im1_corrs)
+
+    # Add the new points to the set of reconstruction points
+    points3D = np.append(points3D, new_points3D, 0)
+  corrs[image_name] = (0, cur_image_corrs)
+
   return points3D, corrs
   

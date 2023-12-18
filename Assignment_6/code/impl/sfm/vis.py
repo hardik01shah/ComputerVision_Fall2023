@@ -26,6 +26,8 @@ def PlotWithKeypoints(image):
   ax.imshow(image.image)
   ax.plot(image.kps[:,0], image.kps[:,1], 'r.')
   ax.axis('off')
+  # plt.savefig(f'../data/image_with_kps/{image.name[:-4]}_keypoints.png', bbox_inches='tight')
+  # plt.show(block=True)
   plt.show(block=False)
 
 
@@ -60,4 +62,5 @@ def PlotCameras(images, registered_images, ax=None):
   for image_name in registered_images:
     image = images[image_name]
     R, t = image.Pose()
+    # print(f'Plotting camera {image_name} at {t}')
     ax = PlotCamera(R, t, ax, 0.5)

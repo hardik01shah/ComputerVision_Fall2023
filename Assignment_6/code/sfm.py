@@ -39,23 +39,23 @@ def main():
 
   K = ReadKMatrix(data_folder)
 
-  init_images = [3, 4]
+  init_images = [5, 6]
 
   # ------------------------------------------------------------------------------------
   # Visualize images and features
   # You can comment these lines once you verified that the images are loaded correctly
 
   # Show the images
-  PlotImages(images)
+  # PlotImages(images)
 
   # Show the keypoints
-  for image_name in image_names:
-    PlotWithKeypoints(images[image_name])
+  # for image_name in image_names:
+  #   PlotWithKeypoints(images[image_name])
 
   # Show the feature matches
-  for image_pair in itertools.combinations(image_names, 2):
-    PlotImagePairMatches(images[image_pair[0]], images[image_pair[1]], matches[(image_pair[0], image_pair[1])])
-    gc.collect()
+  # for image_pair in itertools.combinations(image_names, 2):
+  #   PlotImagePairMatches(images[image_pair[0]], images[image_pair[1]], matches[(image_pair[0], image_pair[1])])
+  #   gc.collect()
   # ------------------------------------------------------------------------------------
   
   e_im1_name = image_names[init_images[0]]
@@ -82,13 +82,24 @@ def main():
   # you can set the image poses in the images (image.SetPose(...))
   # Note that this pose is assumed to be the transformation from global space to image space
   # TODO
+  # Triangulate points with each of the four possible relative poses
+  for i, (R, t) in enumerate(possible_relative_poses):
+    e_im1.SetPose(np.eye(3), np.zeros(3))
+    e_im2.SetPose(R, t)
+    points3D, im1_corrs, im2_corrs = TriangulatePoints(K, e_im1, e_im2, e_matches)
+
+    # Count the number of points that are in front of both cameras
+    num_points = len(points3D)
+    if num_points > max_points:
+      max_points = num_points
+      best_pose = i
   
 
   # TODO
   # Set the image poses in the images (image.SetPose(...))
   # Note that the pose is assumed to be the transformation from global space to image space
-  e_im1.SetPose(...)
-  e_im2.SetPose(...)
+  e_im1.SetPose(np.eye(3), np.zeros(3))
+  e_im2.SetPose(possible_relative_poses[best_pose][0], possible_relative_poses[best_pose][1])
 
 
   # Triangulate initial points
