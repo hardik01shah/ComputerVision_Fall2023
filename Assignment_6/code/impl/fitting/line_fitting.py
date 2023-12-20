@@ -69,7 +69,7 @@ def main():
 	b_gt = 10
 	num_subset = 5
 	x_gt = np.linspace(-10,10,n_samples)
-	print(x_gt.shape)
+	# print(x_gt.shape)
 	y_gt = k_gt*x_gt+b_gt
 	# add noise
 	x_noisy = x_gt+np.random.random(x_gt.shape)-0.5
@@ -85,8 +85,12 @@ def main():
 	k_ransac, b_ransac, inlier_mask = ransac(x_noisy, y_noisy, iter, n_samples, thres_dist, num_subset)
 	outlier_mask = np.logical_not(inlier_mask)
 
-	print("Estimated coefficients (true, linear regression, RANSAC):")
-	print(k_gt, b_gt, k_ls, b_ls, k_ransac, b_ransac)
+	# print("Estimated coefficients (true, linear regression, RANSAC):")
+	# print(k_gt, b_gt, k_ls, b_ls, k_ransac, b_ransac)
+
+	print(f"Groundtruth coefficients: {k_gt}, {b_gt}")
+	print(f"Least square coefficients: {k_ls}, {b_ls}")
+	print(f"RANSAC coefficients: {k_ransac}, {b_ransac}")
 
 	line_x = np.arange(x_noisy.min(), x_noisy.max())
 	line_y_ls = k_ls*line_x+b_ls
